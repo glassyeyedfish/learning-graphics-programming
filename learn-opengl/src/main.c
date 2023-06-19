@@ -1,17 +1,12 @@
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "glad/glad.h"
 
 #include <GLFW/glfw3.h>
 
-void
-load_shader_source(const char* filename) {
-    FILE* f = fopen(filename, "r");
-
-
-    fclose(f);
-}
+#include "gl_util.h"
 
 void 
 framebuffer_size_callback(GLFWwindow* window, int width, int height) 
@@ -27,36 +22,6 @@ main_input(GLFWwindow* window)
     if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, true);
     }
-}
-
-void
-main_update(GLFWwindow* window) 
-{
-    /*
-     * Here we set up the data that will be passed to the GPU.
-     */
-    float vertex_data[] = {
-        -0.5f, -0.5f, 0.0f,
-         0.5f, -0.5f, 0.0f,
-         0.0f,  0.5f, 0.f
-    };
-
-    /*
-     * Here we set up a "vertex buffer object". It is a region of memory in the 
-     * GPU that we can write our vertex data to.
-     */
-
-    // The unique ID of the VBO.
-    GLuint vbo;
-
-    // Assigning the ID to the VBO.
-    glGenBuffers(1, &vbo);
-
-    // Setting the type of VBO.
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-
-    // Writing the vertex data to the VBO.
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_data), vertex_data, GL_STATIC_DRAW);
 }
 
 void
@@ -80,7 +45,7 @@ main()
     /* Window / Context Setup */
     GLFWwindow* window = glfwCreateWindow(800, 600, "LearnOpenGL", NULL, NULL);
     if (window == NULL) {
-        fprintf(stderr, "[fatal] Failed to create GLFW window!");
+        fprintf(stderr, "[error] Failed to create GLFW window!");
         glfwTerminate();
         return -1;
     }
@@ -88,7 +53,7 @@ main()
     glfwMakeContextCurrent(window);
 
     if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
-        fprintf(stderr, "[fatal] Failed to initialize GLAD!");
+        fprintf(stderr, "[error] Failed to initialize GLAD!");
         return -1;
     }  
 
@@ -96,10 +61,36 @@ main()
 
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
+    /* Here we set up the data that will be passed to the GPU. */
+    float vertex_data[] = {
+        -0.5f, -0.5f, 0.0f,
+         0.5f, -0.5f, 0.0f,
+         0.0f,  0.5f, 0.f
+    };
+
+    /* Here we set up a "vertex buffer object". It is a region of memory in the 
+     * GPU that we can write our vertex data to. */
+
+    // The unique ID of the VBO.
+    GLuint vbo;
+
+    // Assigning the ID to the VBO.
+    glGenBuffers(1, &vbo);
+
+    // Setting the type of VBO.
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+    // Writing the vertex data to the VBO.
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_data), vertex_data, GL_STATIC_DRAW);
+
+    GLuint program = create_shader_program("src/shaders/vertex.glsl", "src/shaders/fragment.glsl");
+    if (program == 0) {
+        return -1;
+    }
+
     /* Main Loop */
     while (!glfwWindowShouldClose(window)) {
         main_input(window);
-        main_update(window);
         main_render(window);
     }
 
